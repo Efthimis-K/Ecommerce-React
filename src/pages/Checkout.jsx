@@ -18,8 +18,6 @@ export default function Checkout() {
     const placeOrder = () => {
         alert("Order placed successfully!");
         clearCart();
-        // You can add navigation logic here
-        // For example: navigate("/thank-you");
     };
 
     return (

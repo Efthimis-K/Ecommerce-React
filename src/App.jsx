@@ -19,7 +19,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="auth" element={<Auth />} />
             <Route path="/checkout" element={<Checkout />} />
-            {/* Add a new route for product details*/}
+
             <Route path="/product/:id" element={<ProductDetail />} />
           </Routes>
         </div>
