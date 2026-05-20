@@ -4,10 +4,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getProductById } from "../data/products";
+import { useCart } from "../context/CartContext";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const { addToCart, cartItems } = useCart();
+  //   product in cart
+  // const productInCart = cartItems.find((item) => item.id === product.id);
+
+  // const productQuantityList = productInCart ? `${productInCart.quantity}` : "";
+
   // use state
   const [product, setProduct] = useState(null);
 
@@ -16,13 +24,13 @@ export default function ProductDetail() {
 
     // log the product data
     console.log(fetchedProduct);
-    if(!fetchedProduct) {
+    if (!fetchedProduct) {
       // redirect to home
       navigate("/");
       return;
     }
     setProduct(fetchedProduct);
-    
+
   }, [id]);
 
   // check if product is loading
@@ -36,6 +44,11 @@ export default function ProductDetail() {
     </div>;
   }
 
+  const productInCart = cartItems.find((item) => item.id === product.id);
+
+  const productQuantityList = productInCart ? `${productInCart.quantity}` : "";
+
+
   return <div className="page">
     <div className="container">
       <div className="product-details">
@@ -46,7 +59,14 @@ export default function ProductDetail() {
           <h2>{product.name}</h2>
           <p>{product.description}</p>
           <p>${product.price}</p>
-          <button className="btn btn-primary">Add to Cart</button>
+          <button
+            className="btn btn-primary"
+            onClick={() => addToCart(product.id)}
+            style={{ marginRight: "10px" }}
+          >
+            {productQuantityList} Add to Cart
+          </button>
+
         </div>
       </div>
     </div>
