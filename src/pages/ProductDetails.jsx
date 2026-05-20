@@ -11,11 +11,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
 
   const { addToCart, cartItems } = useCart();
-  //   product in cart
-  // const productInCart = cartItems.find((item) => item.id === product.id);
-
-  // const productQuantityList = productInCart ? `${productInCart.quantity}` : "";
-
+  
   // use state
   const [product, setProduct] = useState(null);
 

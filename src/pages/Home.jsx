@@ -8,7 +8,7 @@ export default function Home() {
     const products = getProducts();
     return <div className="page">
         <div className="home-hero">
-            <h1 className="home-title">This is the Home Page</h1>
+            <h1 className="home-title">E-Commerce Store</h1>
             <p className="home-subtitle">Your one-stop shop for all your needs</p>
         </div>
         <div className="container">
