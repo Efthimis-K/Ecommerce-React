@@ -1,6 +1,6 @@
 // AuthContext.jsx - Authentication context for the application
 
-import { createContext, useState } from "react";
+import { createContext, useState, useContext } from "react";
 
 // Create context
 export const AuthContext = createContext(
@@ -64,4 +64,16 @@ export default function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+
+// Custom Hook to use the AuthContext
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
+  return context;
 }

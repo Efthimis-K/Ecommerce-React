@@ -3,9 +3,8 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContect";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContect";
 
 export default function Auth() {
   const [type, setType] = useState("register");
@@ -15,7 +14,7 @@ export default function Auth() {
   const navigate = useNavigate();
 
   //context
-  const { signup, login, user, logout } = useContext(AuthContext);
+  const { signup, login } = useAuth();
 
   const {
     register,
@@ -42,19 +41,10 @@ export default function Auth() {
     <div className="page">
       <div className="container">
         <div className="auth-container">
-          {/* do a check if user is logged in */}
-          {user && (
-            <div>
-              <div>Welcome {user.email}</div>
-              <button className="btn btn-primary btn-large" onClick={logout}>
-                Logout
-              </button>
-            </div>
-          )}
           <h1 className="page-title">
             {type === "login" ? "Welcome" : "Register"}
           </h1>
-          {/* <p>Please login or register</p> */}
+
           <form
             className="auth-form"
             onSubmit={handleSubmit(onSubmit)}
