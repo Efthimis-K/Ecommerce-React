@@ -66,14 +66,23 @@ export default function CartProvider({ children }) {
   }
 
   function updateQuantity(productId, quantity) {
-    if (quantity <= 0) {
+    // Verify inputs to updateQuantity to prevent non-numeric/non-integer values
+    // that could cause NaN in getCartTotal. Validated inputs will safely call
+    // either removeFromCart or setCartItems.
+    const parsed = Number(quantity);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    const validatedQuantity = Math.floor(parsed);
+
+    if (validatedQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
 
     setCartItems((items) =>
       items.map((item) =>
-        item.id === productId ? { ...item, quantity } : item,
+        item.id === productId ? { ...item, quantity: validatedQuantity } : item,
       ),
     );
   }
