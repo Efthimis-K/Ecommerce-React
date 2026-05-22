@@ -268,12 +268,18 @@ body {
 }
 
 .auth-link {
+  background: none;
+  border: 0;
   color: #007bff;
+  cursor: pointer;
+  font: inherit;
   text-decoration: none;
   font-weight: 500;
+  padding: 0;
 }
 
-.auth-link:hover {
+.auth-link:hover,
+.auth-link:focus-visible {
   text-decoration: underline;
 }
 

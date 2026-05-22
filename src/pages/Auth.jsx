@@ -113,14 +113,15 @@ export default function Auth() {
               {type === "login"
                 ? "Don't have an account? "
                 : "Already have an account? "}
-              <span
+              <button
+                type="button"
                 className="auth-link"
                 onClick={() =>
                   switchAuthMode(type === "login" ? "register" : "login")
                 }
               >
                 {type === "login" ? "Register" : "Login"}
-              </span>
+              </button>
             </p>
           </div>
         </div>
