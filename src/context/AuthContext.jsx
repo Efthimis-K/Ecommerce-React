@@ -1,23 +1,24 @@
-// AuthContext.jsx - Authentication context for the application
-
 import { createContext, useState, useContext } from "react";
 
-// Create context
-export const AuthContext = createContext(
-  localStorage.getItem("currentUserEmail")
-    ? { email: localStorage.getItem("currentUserEmail") }
-    : null,
-);
+const CURRENT_USER_KEY = "currentUserEmail";
 
-// Create provider component
+function loadStoredUser() {
+  try {
+    const email = localStorage.getItem(CURRENT_USER_KEY);
+    return email ? { email } : null;
+  } catch {
+    return null;
+  }
+}
+
+export const AuthContext = createContext(undefined);
+
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(loadStoredUser);
 
-  // signup function
   function signup(email, password) {
     const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-    // check if email already exists
     if (users.find((user) => user.email === email)) {
       return { success: false, message: "Email already exists" };
     }
@@ -29,15 +30,18 @@ export default function AuthProvider({ children }) {
     };
     users.push(newUser);
 
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("currentUserEmail", email);
+    try {
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem(CURRENT_USER_KEY, email);
+    } catch {
+      return { success: false, message: "Could not save account" };
+    }
 
     setUser({ email });
 
     return { success: true, message: "User created successfully" };
   }
 
-  // Login function
   function login(email, password) {
     const users = JSON.parse(localStorage.getItem("users") || "[]");
     const user = users.find(
@@ -45,17 +49,24 @@ export default function AuthProvider({ children }) {
     );
 
     if (user) {
+      try {
+        localStorage.setItem(CURRENT_USER_KEY, email);
+      } catch {
+        return { success: false, message: "Could not save session" };
+      }
       setUser({ email });
-      localStorage.setItem("currentUserEmail", email);
       return { success: true, message: "Login successful" };
-    } else {
-      return { success: false, message: "Invalid email or password" };
     }
+
+    return { success: false, message: "Invalid email or password" };
   }
 
-  // Logout function
   function logout() {
-    localStorage.removeItem("currentUserEmail");
+    try {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    } catch {
+      // ignore storage errors on logout
+    }
     setUser(null);
   }
 
@@ -66,8 +77,6 @@ export default function AuthProvider({ children }) {
   );
 }
 
-
-// Custom Hook to use the AuthContext
 export function useAuth() {
   const context = useContext(AuthContext);
 

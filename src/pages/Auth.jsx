@@ -3,15 +3,23 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContect";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Auth() {
-  const [type, setType] = useState("register");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const type = searchParams.get("mode") === "login" ? "login" : "register";
   const [error, setError] = useState(null);
 
-  //navigate
   const navigate = useNavigate();
+
+  function switchAuthMode(nextType) {
+    if (nextType === "login") {
+      setSearchParams({ mode: "login" });
+    } else {
+      setSearchParams({});
+    }
+  }
 
   //context
   const { signup, login } = useAuth();
@@ -107,7 +115,9 @@ export default function Auth() {
                 : "Already have an account? "}
               <span
                 className="auth-link"
-                onClick={() => setType(type === "login" ? "register" : "login")}
+                onClick={() =>
+                  switchAuthMode(type === "login" ? "register" : "login")
+                }
               >
                 {type === "login" ? "Register" : "Login"}
               </span>

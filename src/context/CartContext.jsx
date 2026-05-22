@@ -1,72 +1,90 @@
-// CartContext.jsx - Authentication context for the application
-
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import { getProductById } from "../data/products";
 
-// Create context
-export const CartContext = createContext();
+const CART_STORAGE_KEY = "cart:v1";
 
-// Create provider component
+function loadCartItems() {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter(
+      (item) =>
+        item &&
+        typeof item.id === "number" &&
+        typeof item.quantity === "number" &&
+        item.quantity > 0,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export const CartContext = createContext(undefined);
+
 export default function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(loadCartItems);
 
-  // add cart function
-  function addToCart(productId) {
-    const existingItem = cartItems.find((item) => item.id === productId);
-
-    if (existingItem) {
-      const currentQuantity = existingItem.quantity;
-      const updatedCartItems = cartItems.map((item) =>
-        item.id === productId
-          ? { ...item, quantity: currentQuantity + 1 }
-          : item,
-      );
-
-      setCartItems(updatedCartItems);
-    } else {
-      setCartItems([...cartItems, { id: productId, quantity: 1 }]);
-
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    } catch {
+      // ignore quota / private browsing errors
     }
+  }, [cartItems]);
+
+  function addToCart(productId) {
+    setCartItems((items) => {
+      const existingItem = items.find((item) => item.id === productId);
+
+      if (existingItem) {
+        return items.map((item) =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      }
+
+      return [...items, { id: productId, quantity: 1 }];
+    });
   }
 
-  // function getCartItemsWithProducts
   function getCartItemsWithProducts() {
-    return cartItems.map((item) => ({
-      ...item,
-      product: getProductById(item.id),
-    })).filter(item => item.product !== null);
+    return cartItems
+      .map((item) => ({
+        ...item,
+        product: getProductById(item.id),
+      }))
+      .filter((item) => item.product !== null);
   }
 
-  // remove cart function
   function removeFromCart(productId) {
-    setCartItems(cartItems.filter((item) => item.id !== productId));
+    setCartItems((items) => items.filter((item) => item.id !== productId));
   }
 
-  // update Quantity function
   function updateQuantity(productId, quantity) {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
-    } else {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === productId ? { ...item, quantity } : item,
-        ),
-      );
     }
+
+    setCartItems((items) =>
+      items.map((item) =>
+        item.id === productId ? { ...item, quantity } : item,
+      ),
+    );
   }
 
   function getCartTotal() {
-    const total = cartItems.reduce(
-      (total, item) => {
-        const product = getProductById(item.id);
-        return total + (product ? product.price * item.quantity : 0);
-      }, 0
-    );
-    return total;
+    return cartItems.reduce((total, item) => {
+      const product = getProductById(item.id);
+      return total + (product ? product.price * item.quantity : 0);
+    }, 0);
   }
 
-  // clear cart function
   function clearCart() {
     setCartItems([]);
   }
@@ -80,7 +98,7 @@ export default function CartProvider({ children }) {
         updateQuantity,
         removeFromCart,
         getCartTotal,
-        clearCart
+        clearCart,
       }}
     >
       {children}
@@ -88,12 +106,11 @@ export default function CartProvider({ children }) {
   );
 }
 
-// Custom Hook to use the CartContext
 export function useCart() {
   const context = useContext(CartContext);
 
   if (context === undefined) {
-    throw new Error("useCart must be used within an CartProvider");
+    throw new Error("useCart must be used within a CartProvider");
   }
 
   return context;

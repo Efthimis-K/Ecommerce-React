@@ -1,11 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import { useState } from "react";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
 import Navbar from "./components/Navbar";
-import AuthProvider from "./context/AuthContect";
+import AuthProvider from "./context/AuthContext";
 import ProductDetail from "./pages/ProductDetails";
 import CartProvider from "./context/CartContext";
 
