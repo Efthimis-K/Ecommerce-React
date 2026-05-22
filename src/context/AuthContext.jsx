@@ -1,6 +1,7 @@
 import { createContext, useState, useContext } from "react";
 
 const CURRENT_USER_KEY = "currentUserEmail";
+const USERS_KEY = "users";
 
 function loadStoredUser() {
   try {
@@ -11,13 +12,46 @@ function loadStoredUser() {
   }
 }
 
+function loadStoredUsers() {
+  let storedUsers = null;
+
+  try {
+    storedUsers = localStorage.getItem(USERS_KEY);
+    if (!storedUsers) return { users: [], storedUsers, error: false };
+
+    const users = JSON.parse(storedUsers);
+    if (!Array.isArray(users)) {
+      throw new Error("Stored users must be an array");
+    }
+
+    return { users, storedUsers, error: false };
+  } catch (error) {
+    console.warn("Could not read stored users.", error);
+
+    try {
+      localStorage.removeItem(USERS_KEY);
+    } catch {
+      // ignore cleanup errors
+    }
+
+    return { users: [], storedUsers, error: true };
+  }
+}
+
 export const AuthContext = createContext(undefined);
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(loadStoredUser);
 
   function signup(email, password) {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const { users, storedUsers, error } = loadStoredUsers();
+
+    if (error) {
+      return {
+        success: false,
+        message: "Saved accounts could not be read. Please try again.",
+      };
+    }
 
     if (users.find((user) => user.email === email)) {
       return { success: false, message: "Email already exists" };
@@ -28,12 +62,22 @@ export default function AuthProvider({ children }) {
       email,
       password,
     };
-    users.push(newUser);
+    const updatedUsers = [...users, newUser];
 
     try {
-      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
       localStorage.setItem(CURRENT_USER_KEY, email);
     } catch {
+      try {
+        if (storedUsers === null) {
+          localStorage.removeItem(USERS_KEY);
+        } else {
+          localStorage.setItem(USERS_KEY, storedUsers);
+        }
+      } catch {
+        // ignore rollback errors
+      }
+
       return { success: false, message: "Could not save account" };
     }
 
@@ -43,7 +87,15 @@ export default function AuthProvider({ children }) {
   }
 
   function login(email, password) {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const { users, error } = loadStoredUsers();
+
+    if (error) {
+      return {
+        success: false,
+        message: "Saved accounts could not be read. Please try again.",
+      };
+    }
+
     const user = users.find(
       (user) => user.email === email && user.password === password,
     );
