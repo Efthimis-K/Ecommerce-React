@@ -1,8 +1,12 @@
 // Checkout page
 
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
 export default function Checkout() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const {
         getCartItemsWithProducts,
         updateQuantity,
@@ -16,6 +20,11 @@ export default function Checkout() {
 
     // Function to handle order placement
     const placeOrder = () => {
+        if (!user) {
+            alert("Please log in or register to place your order.");
+            navigate("/auth");
+            return;
+        }
         alert("Order placed successfully!");
         clearCart();
     };
